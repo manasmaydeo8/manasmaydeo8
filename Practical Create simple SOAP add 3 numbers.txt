@@ -1,0 +1,162 @@
+Practical: Create and Consume SOAP Web Service (add 3 Numbers)
+Aim
+
+To create a SOAP Web Service that adds three numbers and then create a Java client application that consumes the web service.
+
+PART 1 — Creating the Web Service (Server)
+Step 1 — Open NetBeans
+
+Start Apache NetBeans IDE.
+
+Create a new project.
+
+File → New Project
+
+Select
+
+Java Web → Web Application
+
+Click Next.
+
+Step 2 — Name the Project
+
+Project Name
+
+Add3NumbersWS
+
+Choose server
+
+GlassFish Server
+
+Click Finish.
+
+Step 3 — Create Package
+
+Inside the project:
+
+Source Packages → Right Click → New → Java Package
+
+Package name
+
+Server
+Step 4 — Create Web Service
+
+Right click the package
+
+New → Web Service
+
+Service name
+
+Add3Numbers
+
+Click Finish.
+
+Step 5 — Write Server Code
+
+Open file
+
+Add3Numbers.java
+
+Paste the code.
+
+package Server;
+
+import javax.jws.WebService;
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+
+@WebService(serviceName = "Add3Numbers")
+public class Add3Numbers {
+
+    @WebMethod(operationName = "add")
+    public double add(
+            @WebParam(name = "n1") double n1,
+            @WebParam(name = "n2") double n2,
+            @WebParam(name = "n3") double n3) {
+
+        return (n1 + n2 + n3);
+    }
+
+}
+
+Save the file.
+
+Step 6 — Run the Web Service
+
+Right click project
+
+Run
+
+The service will deploy on GlassFish Server.
+
+Step 7 — Check WSDL
+
+Open browser and enter
+
+http://localhost:8080/Add3NumbersWS/Add3Numbers?wsdl
+
+If the XML page appears → the web service is successfully deployed.
+
+PART 2 — Creating Client Application
+Step 8 — Create Client Project
+
+Create a new project.
+
+File → New Project
+
+Select
+
+Java → Java Application
+
+Project name
+
+Multiply3NumbersClient
+
+Click Finish.
+
+Step 9 — Add Web Service Client
+
+Right click project
+
+New → Web Service Client
+
+Enter the WSDL URL
+
+http://localhost:8080/Add3NumbersWS/Add3Numbers?wsdl
+
+Click Finish.
+
+NetBeans will automatically generate the client classes.
+
+PART 3 — Writing Client Code
+Step 10 — Write Client Program
+
+Open
+
+Main.java
+
+Write the code below.
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        Add3Numbers.Multiply3numbers_Service service =
+                new Add3Numbers.Multiply3numbers_Service();
+
+        Add3Numbers.Multiply3numbers port =
+                service.getMultiply3numbersPort();
+
+        double result = port.add(10, 20, 30);
+
+        System.out.println("Result = " + result);
+
+    }
+}
+Step 11 — Run Client
+
+Run the program.
+
+Output:
+
+Result = 60.0
