@@ -1,0 +1,226 @@
+Practical: Download Image From Server
+Aim
+
+To create a web service that returns an image from the server and display it on a web page using an HTTP handler.
+
+Step 1 — Create ASP.NET Web Application
+
+Open Visual Studio
+
+File → New → Project
+
+Select
+
+ASP.NET Web Application (.NET Framework)
+
+Project name:
+
+ImageDownloadWS
+
+Click Create.
+
+Step 2 — Create Images Folder
+
+Inside the project create a folder:
+
+images
+
+Place an image file inside:
+
+flower.jpg
+
+Example structure
+
+ImageDownloadWS
+│
+├── images
+│     └── flower.jpg
+Step 3 — Create Web Service
+
+Add new class:
+
+DownloadImageWS.cs
+
+Paste this code.
+
+using System;
+using System.Web;
+using System.Web.Services;
+using System.ComponentModel;
+
+[WebService(Namespace = "http://tempuri.org/")]
+[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+
+public class DownloadImageWS : System.Web.Services.WebService
+{
+
+    public DownloadImageWS()
+    {
+
+    }
+
+    [WebMethod, Description("Get image content")]
+    public byte[] GetImage(string filename)
+    {
+
+        if (System.IO.File.Exists(Server.MapPath("~/images/") + filename))
+        {
+            return System.IO.File.ReadAllBytes(Server.MapPath("~/images/") + filename);
+        }
+        else
+        {
+            return new byte[] { 0 };
+        }
+
+    }
+
+}
+Explanation
+
+This web service method:
+
+GetImage()
+
+• receives image filename
+• reads image from server folder
+• returns image as byte array
+
+Step 4 — Create HTTP Handler
+
+Add new item:
+
+ImageHandler.ashx
+
+Paste the code.
+
+<%@ WebHandler Language="C#" Class="ImageHandler" %>
+
+using System;
+using System.Web;
+
+public class ImageHandler : IHttpHandler
+{
+
+    public void ProcessRequest(HttpContext context)
+    {
+
+        DownloadImageWS di = new DownloadImageWS();
+
+        byte[] biImage = di.GetImage(context.Request["filename"]);
+
+        if (biImage.Length == 1)
+        {
+            // image not found
+        }
+        else
+        {
+            context.Response.ContentType = "image/jpeg";
+            context.Response.BinaryWrite(biImage);
+        }
+
+    }
+
+    public bool IsReusable
+    {
+        get
+        {
+            return false;
+        }
+    }
+
+}
+Explanation
+
+This handler:
+
+receives filename from request
+
+calls the web service
+
+sends the image to browser
+
+Example request
+
+ImageHandler.ashx?filename=flower.jpg
+Step 5 — Create Web Page
+
+Add new Web Form
+
+Download.aspx
+
+Paste this code.
+
+<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Download.aspx.cs" Inherits="Download" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Download Image</title>
+</head>
+<body>
+
+    <form id="form1" runat="server">
+
+        Enter Image Name :
+
+        <asp:TextBox ID="txt1" runat="server"></asp:TextBox>
+
+        <asp:Button ID="btn1"
+        runat="server"
+        Text="Download Image"
+        OnClick="btn1_Click" />
+
+        <br /><br />
+
+        <asp:Image ID="img1" runat="server" />
+
+    </form>
+
+</body>
+</html>
+Step 6 — Write Code Behind
+
+Open
+
+Download.aspx.cs
+
+Paste the code.
+
+using System;
+using System.Web.UI;
+
+public partial class Download : System.Web.UI.Page
+{
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    protected void btn1_Click(object sender, EventArgs e)
+    {
+        img1.ImageUrl = "~/ImageHandler.ashx?filename=" + txt1.Text;
+
+        Response.Write("Downloading image is done");
+    }
+
+}
+Step 7 — Run the Application
+
+Press
+
+F5
+
+Browser opens:
+
+Download.aspx
+
+Enter image name:
+
+flower.jpg
+
+Click
+
+Download Image
+
+The image will appear on the page.

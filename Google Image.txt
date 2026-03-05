@@ -1,0 +1,176 @@
+Google Image
+Step-by-Step Guide (NetBeans Practical)
+1️⃣ Create a New Web Project
+
+Open Apache NetBeans
+
+Click File → New Project
+
+Select
+
+Java Web → Web Application
+
+Click Next
+
+Project Name:
+
+GoogleMaps
+
+Select server:
+
+GlassFish Server
+
+Click Finish
+
+Now your web project is created.
+
+2️⃣ Create Input JSP Page
+
+Right-click Web Pages → New → JSP
+
+File name:
+
+input.jsp
+
+Paste this code:
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Google Maps Input</title>
+</head>
+
+<body>
+
+<form action="output.jsp">
+
+Enter Latitude :
+<input type="text" name="t1"><br><br>
+
+Enter Longitude :
+<input type="text" name="t2"><br><br>
+
+<input type="submit" value="Show Map">
+
+</form>
+
+</body>
+</html>
+
+This page takes latitude and longitude from the user.
+
+3️⃣ Create Output JSP Page
+
+Right-click Web Pages → New → JSP
+
+File name:
+
+output.jsp
+
+Paste this code:
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Google Maps Output</title>
+
+<style>
+#map {
+height: 400px;
+width: 100%;
+}
+</style>
+
+</head>
+
+<body>
+
+<%
+double lati = Double.parseDouble(request.getParameter("t1"));
+double longi = Double.parseDouble(request.getParameter("t2"));
+%>
+
+<h2>Google Map Location</h2>
+
+<div id="map"></div>
+
+<script>
+
+function initMap() {
+
+var info = {lat: <%=lati%>, lng: <%=longi%>};
+
+var map = new google.maps.Map(document.getElementById('map'), {
+zoom: 4,
+center: info
+});
+
+var marker = new google.maps.Marker({
+position: info,
+map: map
+});
+
+}
+
+</script>
+
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
+</script>
+
+</body>
+</html>
+
+Replace:
+
+YOUR_API_KEY
+
+with your Google Maps API key.
+
+4️⃣ Get Google Maps API Key
+
+Go to Google Cloud Console
+
+Steps:
+
+Create a new project
+
+Enable Maps JavaScript API
+
+Click Credentials
+
+Create API Key
+
+Copy it and paste in output.jsp
+
+5️⃣ Deploy the Project
+
+In NetBeans:
+
+Right click Project → Deploy
+
+This will run it on GlassFish Server.
+
+6️⃣ Run the Input Page
+
+Right click
+
+input.jsp → Run File
+
+Browser opens:
+
+http://localhost:8080/GoogleMaps/input.jsp
+7️⃣ Test the Practical
+
+Enter coordinates:
+
+Example:
+
+Latitude  : 18.5204
+Longitude : 73.8567
+
+Click Show Map
