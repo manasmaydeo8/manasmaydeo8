@@ -1,0 +1,205 @@
+Practical: Create SOAP Web Service to Add 3 Numbers and Consume Using JSP Client
+Aim
+
+To create a SOAP Web Service in Java that adds three numbers and to consume the web service using a JSP client application.
+
+PART 1 — Create Web Service (Server)
+Step 1 — Open NetBeans
+
+Start Apache NetBeans IDE.
+
+Create a new project.
+
+File → New Project
+
+Select:
+
+Java Web → Web Application
+
+Click Next.
+
+Step 2 — Name the Project
+
+Project Name:
+
+Addition3NumbersWS
+
+Server:
+
+GlassFish Server
+
+Click Finish.
+
+Step 3 — Create Web Service
+
+Inside the project:
+
+Source Packages
+→ Right Click
+→ New
+→ Web Service
+
+Service Name:
+
+Addition3NumbersWS
+
+Click Finish.
+
+Step 4 — Paste Web Service Code
+
+Open:
+
+Addition3NumbersWS.java
+
+Paste your provided code.
+
+import javax.jws.WebService;
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+
+@WebService(serviceName = "Addition3NumbersWS")
+public class Addition3NumbersWS {
+
+    @WebMethod(operationName = "add")
+    public double add(
+            @WebParam(name = "n1") double n1,
+            @WebParam(name = "n2") double n2,
+            @WebParam(name = "n3") double n3) {
+
+        return (n1 + n2 + n3);
+    }
+}
+
+Save the file.
+
+Step 5 — Run the Web Service
+
+Right click the project:
+
+Run
+
+The server will deploy the service.
+
+Step 6 — Check WSDL
+
+Open browser and enter:
+
+http://localhost:8080/Addition3NumbersWS/Addition3NumbersWS?wsdl
+
+If XML appears → the web service is running correctly.
+
+PART 2 — Create JSP Client
+Step 7 — Create Web Page
+
+Inside the project:
+
+Web Pages
+→ New
+→ JSP
+
+File name:
+
+index.jsp
+
+Paste the following code.
+
+<html>
+<body>
+
+<form action="output.jsp" method="POST">
+
+Enter First Number :
+<input type="text" name="t1" value="" />
+
+<br><br>
+
+Enter Second Number :
+<input type="text" name="t2" value="" />
+
+<br><br>
+
+Enter Third Number :
+<input type="text" name="t3" value="" />
+
+<br><br>
+
+<input type="submit" value="Submit" />
+
+</form>
+
+</body>
+</html>
+
+This page takes three numbers from the user.
+
+Step 8 — Generate Web Service Client
+
+Inside project:
+
+Right Click Project
+→ New
+→ Web Service Client
+
+Enter WSDL URL:
+
+http://localhost:8080/Addition3NumbersWS/Addition3NumbersWS?wsdl
+
+Click Finish.
+
+NetBeans will automatically generate a Client package.
+
+Step 9 — Create Output Page
+
+Create another JSP page.
+
+output.jsp
+
+Paste your provided code.
+
+<%
+try {
+
+    Client.Addition3NumbersWS_Service service =
+            new Client.Addition3NumbersWS_Service();
+
+    Client.Addition3NumbersWS port =
+            service.getAddition3NumbersWSPort();
+
+    double n1 = Double.parseDouble(request.getParameter("t1"));
+    double n2 = Double.parseDouble(request.getParameter("t2"));
+    double n3 = Double.parseDouble(request.getParameter("t3"));
+
+    double result = port.add(n1, n2, n3);
+
+    out.println("Result = " + result);
+
+} catch (Exception ex) {
+
+}
+%>
+
+This page calls the SOAP Web Service and prints the result.
+
+PART 3 — Run the Application
+Step 10 — Run Project
+
+Press:
+
+F6
+
+Browser opens:
+
+index.jsp
+Step 11 — Enter Numbers
+
+Example input:
+
+10
+20
+30
+
+Click:
+
+Submit
+Expected Output
+Result = 60.0
