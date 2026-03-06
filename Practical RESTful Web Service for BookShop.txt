@@ -1,0 +1,354 @@
+Practical: RESTful Web Service for BookShop (GET & POST) with Python Client
+Aim
+
+To create a RESTful Web Service using Java (JAX-RS) that retrieves and inserts book details in a MySQL database, and to consume the API using a Python client.
+
+PART 1 — Database Setup
+Step 1: Start MySQL
+
+Start MySQL / XAMPP / phpMyAdmin.
+
+Create database:
+
+CREATE DATABASE bookshop;
+Step 2: Create Table
+USE bookshop;
+
+CREATE TABLE books(
+    isbn VARCHAR(20),
+    name VARCHAR(50),
+    prize VARCHAR(20)
+);
+Step 3: Insert Sample Records
+INSERT INTO books VALUES('101','Java Programming','500');
+INSERT INTO books VALUES('102','Python Basics','450');
+INSERT INTO books VALUES('103','Web Services','600');
+PART 2 — Create REST Web Service (Server)
+Step 4: Open NetBeans
+
+Open Apache NetBeans.
+
+Create a new project.
+
+File → New Project
+
+Select:
+
+Java Web → Web Application
+
+Project Name:
+
+BookShopREST
+
+Server:
+
+GlassFish Server
+
+Click Finish.
+
+Step 5: Add MySQL Connector
+
+Download MySQL Connector/J.
+
+Add it to project:
+
+Right Click Project
+→ Properties
+→ Libraries
+→ Add JAR
+
+Select:
+
+mysql-connector-java.jar
+Step 6: Create Package
+Source Packages
+→ New
+→ Java Package
+
+Package name:
+
+BookShopPackage
+Step 7: Create Java Class (Books.java)
+
+Create class:
+
+Books.java
+
+Paste your code exactly:
+
+package BookShopPackage;
+
+import java.io.StringReader;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
+public class Books {
+
+    private String isbn;
+    private String name;
+    private String prize;
+
+    public static Books fromJsonString(String jsonString) {
+
+        Books book = new Books();
+
+        try (JsonReader jsonReader = Json.createReader(new StringReader(jsonString))) {
+
+            JsonObject jsonObject = jsonReader.readObject();
+
+            book.setIsbn(jsonObject.getString("isbn"));
+            book.setName(jsonObject.getString("name"));
+            book.setPrize(jsonObject.getString("prize"));
+
+        }
+
+        return book;
+    }
+
+    public String getIsbn() { return isbn; }
+
+    public void setIsbn(String isbn) { this.isbn = isbn; }
+
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+
+    public String getPrize() { return prize; }
+
+    public void setPrize(String prize) { this.prize = prize; }
+
+    public Books() {}
+
+    public Books(String isbn, String name, String prize) {
+        this.isbn = isbn;
+        this.name = name;
+        this.prize = prize;
+    }
+}
+Step 8: Create REST Resource Class
+
+Create class:
+
+GenericResource.java
+
+Add required imports:
+
+import java.sql.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+Step 9: GET Method (Fetch Book)
+
+Paste your provided GET code:
+
+@GET
+@Produces(MediaType.APPLICATION_JSON)
+@Path("/getbook")
+
+public String getBook(@QueryParam("isbn") String isbn) {
+
+    String data = "";
+
+    try {
+
+        Class.forName("com.mysql.jdbc.Driver");
+
+        String url = "jdbc:mysql://localhost/bookshop";
+
+        Connection con = DriverManager.getConnection(url, "root", "root");
+
+        Statement st = con.createStatement();
+
+        String query = "SELECT * FROM books WHERE isbn = '" + isbn + "'";
+
+        ResultSet rs = st.executeQuery(query);
+
+        while (rs.next()) {
+
+            String bookname = rs.getString("name");
+            String bookprize = rs.getString("prize");
+
+            data = "Book Name : " + bookname + " Prize : " + bookprize;
+        }
+
+    } catch (Exception e) {
+
+        System.out.print("Error : " + e);
+    }
+
+    return data;
+}
+Step 10: POST Method (Insert Book)
+
+Paste your provided POST code:
+
+@POST
+@Path("/addBook")
+@Consumes(MediaType.APPLICATION_JSON)
+
+public Response addBook(String content) {
+
+    try {
+
+        Books book = Books.fromJsonString(content);
+
+        Class.forName("com.mysql.jdbc.Driver");
+
+        String url = "jdbc:mysql://localhost/bookshop";
+
+        Connection con = DriverManager.getConnection(url, "root", "root");
+
+        Statement st = con.createStatement();
+
+        String query = "INSERT INTO books VALUES ('"
+                + book.getIsbn() + "','"
+                + book.getName() + "','"
+                + book.getPrize() + "')";
+
+        int rowaffected = st.executeUpdate(query);
+
+        if (rowaffected > 0) {
+
+            return Response.status(Response.Status.CREATED).build();
+
+        } else {
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to insert book")
+                    .build();
+        }
+
+    } catch (Exception e) {
+
+        System.out.print("Error : " + e);
+
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity("Error : " + e.getMessage())
+                .build();
+    }
+}
+Step 11: Run the Web Service
+
+Right click project:
+
+Run
+
+Server deploys the REST service.
+
+Base URL example:
+
+http://localhost:28606/BookShopREST/webresources
+PART 3 — Python Client Application
+Step 12: Install Required Library
+pip install requests
+Step 13: Create Python Client
+
+Create file:
+
+client.py
+
+Paste your provided Python code.
+
+import requests
+import json
+
+# GET request
+def getBook(isbn):
+    url = "http://localhost:28606/BookShopREST/webresources/generic/getbook"
+    params = {"isbn": isbn}
+
+    res = requests.get(url, params=params)
+
+    if res.status_code == 200:
+        if res.text != "":
+            return res.text
+        return "Book not Found"
+
+    return res.status_code
+
+
+# POST request
+def addBook(isbn, name, prize):
+    url = "http://localhost:28606/BookShopREST/webresources/generic/addBook"
+
+    data = {
+        "isbn": isbn,
+        "name": name,
+        "prize": prize
+    }
+
+    json_data = json.dumps(data)
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(url, data=json_data, headers=headers)
+
+    if response.status_code == 201:
+        return "Book added Successfully"
+    else:
+        return "Something went wrong"
+
+
+print("""
+Bookshop Api
+1. Get Book Details
+2. Add a new Book
+3. Exit
+""")
+
+while True:
+
+    ch = int(input("\nEnter your choice : "))
+
+    if ch == 1:
+        isbn = str(input("Enter book isbn number : "))
+        book_details = getBook(isbn)
+        print(book_details)
+
+    elif ch == 2:
+        print("New Book Details")
+        isbn = str(input("isbn no. : "))
+        name = str(input("book name : "))
+        prize = str(input("Prize : "))
+
+        res = addBook(isbn, name, prize)
+        print(res)
+
+    else:
+        break
+Step 14: Run Python Client
+
+Run:
+
+python client.py
+
+Menu appears:
+
+Bookshop Api
+1. Get Book Details
+2. Add a new Book
+3. Exit
+Example Output
+GET request
+
+Input:
+
+Enter book isbn number : 101
+
+Output:
+
+Book Name : Java Programming Prize : 500
+POST request
+
+Input:
+
+isbn : 104
+name : Cloud Computing
+prize : 650
+
+Output:
+
+Book added Successfully
